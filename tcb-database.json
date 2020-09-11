@@ -1,0 +1,120 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "JSON schema for the cloudbase-framework collections configuration file",
+    "type": "object",
+    "required": [
+        "collectionName",
+        "description"
+    ],
+    "definitions": {
+        "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+        },
+        "createIndex": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "$ref": "#definitions/name",
+                    "title": "索引名称"
+                },
+                "unique": {
+                    "type": "boolean",
+                    "title": "唯一索引",
+                    "description": "设置索引为唯一",
+                    "default": false
+                },
+                "keys": {
+                    "type": "array",
+                    "title": "字段",
+                    "description": "该索引包含的字段",
+                    "default": [
+                        {
+                            "name": "字段名称",
+                            "direction": "1"
+                        }
+                    ],
+                    "items": {
+                        "$ref": "#definitions/indexFleid"
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                }
+            },
+            "required": ["name", "keys", "unique"]
+        },
+        "direction": {
+            "type": ["number", "string"],
+            "enum": ["-1", "1", "2dsphere"],
+            "title": "索引排序",
+            "description": "-1（降序\n1（升序）、\n2dsphere（地理位置)",
+            "default": 1
+        },
+        "indexFleid": {
+            "type": "object",
+            "description": "索引字段",
+            "properties": {
+                "name": {
+                    "$ref": "#definitions/fleid"
+                },
+                "direction": {
+                    "$ref": "#definitions/direction"
+                }
+            }
+        },
+        "fleid": {
+            "$ref": "#definitions/name",
+            "pattern": "^([a-zA-Z])[a-zA-Z0-9_]+?([a-zA-Z0-9])$",
+            "description": "字段名称"
+        },
+        "dropIndex": {
+            "type": "object",
+            "properties": {
+                "name": {"$ref": "#definitions/fleid"}
+            },
+            "description": "索引字段"
+        }
+    },
+    "properties": {
+        "collectionName": {
+            "$ref": "#definitions/name",
+            "description": "集合名称",
+            "pattern": "^([0-9a-zA-Z-])[a-zA-z0-9-_]+$"
+        },
+        "description": {
+            "type": "string",
+            "description": "集合描述信息",
+            "maxLength": 128
+        },
+        "createIndexes": {
+            "type":"array",
+            "maxItems": 20,
+            "items": {
+                "$ref": "#definitions/createIndex"
+            },
+            "title": "创建索引",
+            "description": "设置需要创建的索引信息",
+            "uniqueItems": true
+        },
+        "dropIndexes": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+                "$ref": "#definitions/dropIndex"
+            },
+            "description": "删除的索引"
+        },
+        "aclTag": {
+            "type": "string",
+            "enum": ["READONLY", "PRIVATE", "ADMINWRITE", "ADMINONLY", "CUSTOM"],
+            "description": "READONLY：所有用户可读，仅创建者和管理员可写\nPRIVATE：仅创建者及管理员可读写\nADMINWRITE：所有用户可读，仅管理员可写\nADMINONLY：仅管理员可读写\nCUSTOM：自定义安全规则",
+            "default": "PRIVATE"
+        },
+        "aclRule": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+        }
+    }
+}
